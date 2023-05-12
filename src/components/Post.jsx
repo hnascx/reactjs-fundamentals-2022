@@ -10,9 +10,10 @@ import styles from './Post.module.css'
 
 export function Post({ author, publishedAt, content }) {
   const [comments, setComments] = useState([
-    1,
-    2
+    'Post muito bacana, hein?!'
   ])
+
+  const [newCommentText, setNewCommentText] = useState('')
   
   const publishedDateFormatted = format(publishedAt, "d 'de' LLLL 'às' HH:mm'h'", {
     locale: ptBR,
@@ -26,7 +27,24 @@ export function Post({ author, publishedAt, content }) {
   function handleCreateNewComment() {
     event.preventDefault()
 
-    setComments([...comments, comments.length + 1])
+    setComments([...comments, newCommentText])
+    setNewCommentText('')
+  }
+
+  function handleNewCommentChange() {
+    setNewCommentText(event.target.value)
+  }
+
+  function handleNewCommentInvalid() {
+    event.target.setCustomValidity('Este campo é obrigatório.')
+  }
+
+  function deleteComment(commentToDelete) {
+    const commentsWithoutDeletedOne = comments.filter(comment => {
+      return comment !== commentToDelete
+    })
+
+    setComments(commentsWithoutDeletedOne)
   }
 
   return (
@@ -52,9 +70,9 @@ export function Post({ author, publishedAt, content }) {
       <div className={styles.content}>
         {content.map(item => {
           if (item.type === 'paragraph') {
-            return <p>{item.content}</p>
+            return <p key={item.content}>{item.content}</p>
           } else if (item.type === 'link') {
-            return <p><a href="#">{item.content}</a></p>
+            return <p key={item.content}><a href="#">{item.content}</a></p>
           }
         })}
       </div>
@@ -62,7 +80,12 @@ export function Post({ author, publishedAt, content }) {
       <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
         <strong>Deixe seu feedback</strong>
         <textarea
+          name='comment'
           placeholder='Deixe um comentário'
+          value={newCommentText}
+          onChange={handleNewCommentChange}
+          onInvalid={handleNewCommentInvalid}
+          required
         />
         <footer>
           <button type='submit'>Publicar</button>
@@ -71,7 +94,13 @@ export function Post({ author, publishedAt, content }) {
 
       <div className={styles.commentList}>
         {comments.map(comment => {
-          return <Comment />
+          return (
+            <Comment
+              key={comment}
+              content={comment}
+              onDeleteComment={deleteComment}
+            />
+          )
         })}
       </div>
     </article>
